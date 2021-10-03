@@ -1,0 +1,181 @@
+---
+pagetitle: Measures of fit in the simple linear regression model
+output: 
+  revealjs::revealjs_presentation:
+    incremental: false
+    theme: solarized
+    self_contained: false
+    reveal_plugins: ["chalkboard"]
+    # reveal_plugins: ["menu"]
+    highlight: pygments
+    center: true
+    transition: none
+    background_transition: none 
+    reveal_options:
+      # chalkboard:
+      #   theme: whiteboard
+      #   toggleNotesButton: true
+      #   toggleChalkboardButton: true
+      menu:
+        numbers: true
+      slideNumber: true
+      previewLinks: false
+    fig_caption: true
+    pandoc_args:
+    - --indented-code-classes
+    - lineNumbers
+    css: mystyle.css
+    
+--- 
+
+<section>
+
+<h1>Measures of fit in the simple linear regression model</h1>
+
+Based on Stock and Watson, ch. 4
+
+<br>
+
+<h2>[Jesper Bagger](mailto:jesper.bagger@rhul.ac.uk)</h2>
+
+<h3>EC2208 | Royal Holloway | 2021/22</h3>
+
+</section>
+
+
+```{r results='asis', echo=FALSE, include=FALSE}
+library(AER) # include Applied Econometrics with R package; contains many datasets
+data(CASchools) # Load CASchools data
+# Generate a couple of useful variables
+CASchools$STR <- CASchools$students/CASchools$teachers  # Student-teacher ratio
+CASchools$Score <- (CASchools$read + CASchools$math)/2  # Student test score
+```
+
+## Test scores and student-teacher ratio data
+
+```{r echo=FALSE, error=FALSE, warning=FALSE}
+# Scatter plot of Score against STR
+plot(CASchools$STR,CASchools$Score, 
+     col = "blue", # Color of data points
+     xlab = "Student-teacher ratio",  # Label on x-axis
+     ylab = "Test score",   # Label on y-axis
+     xlim = c(10, 30),  # Range of x-axis (from 10 to 30)
+     ylim = c(600, 720)) # Range of y-axis (from 600 to 720)
+```
+
+## OLS estimates of $\beta_0$ and $\beta_1$
+
+$$Score_i = \beta_0 + \beta_1 STR_i + u_i; \quad i = 1,\ldots,n$$
+
+```{r, echo=TRUE, eval=TRUE, error=FALSE, warning=FALSE}
+# Estimate b0,b1 in Score = b0 + b1 STR + u by OLS; 
+# then assign output to lm1
+lm1 <- lm(Score ~ STR, data = CASchools) 
+lm1 # Print output to console
+```
+
+
+## Test scores and student-teacher and regression line
+
+$$Score_i = \underset{\hat{Score}_i}{\underbrace{698.93 -2.28 STR_i}} + \hat{u}_i; \quad i = 1,\ldots,n$$
+```{r echo=FALSE, error=FALSE, warning=FALSE, out.width = "70%"}
+# Scatter plot of Score against STR
+plot(CASchools$STR,CASchools$Score, 
+     col = "blue", # Color of data points
+     xlab = "Student-teacher ratio",  # Label on x-axis
+     ylab = "Test score",   # Label on y-axis
+     xlim = c(10, 30),  # Range of x-axis (from 10 to 30)
+     ylim = c(600, 720)) # Range of y-axis (from 600 to 720)
+# Add sample regression function to the plot
+abline(lm1,
+       col = "red", # Make the line red
+       lwd = 3) # Set linewidth to 3
+```
+
+## Adding a regression line to a plot in R
+
+```{r echo=TRUE, eval=FALSE, error=FALSE, warning=FALSE}
+# Scatter plot of Score against STR
+plot(CASchools$STR,CASchools$Score, 
+     col = "blue", # Color of data points
+     xlab = "Student-teacher ratio",  # Label on x-axis
+     ylab = "Test score",   # Label on y-axis
+     xlim = c(10, 30),  # Range of x-axis (from 10 to 30)
+     ylim = c(600, 720)) # Range of y-axis (from 600 to 720)
+# Add sample regression function to the plot
+abline(lm1,
+       col = "red", # Make the line red
+       lwd = 3) # Set linewidth to 3
+```
+
+
+## Explained and residual variation
+
+<div class="box">
+$$Score_i = \hat{Score}_i + \hat{u}_i; \quad i = 1,\ldots,n$$
+</div>
+
+<!-- - Two sources of $Score_i$ sample variation: $\hat{Score}_i$ and $\hat{u}_i$ -->
+
+- Explained variance: variation in $\hat{Score}_i$ 
+
+  - Variation in $\hat{Score}_i = \hat{\beta}_0 + \hat{\beta}_1 STR_i$ comes from variation in regressor (or explanatory variable) $STR_i$
+  
+- Residual variance: variation in $\hat{u}_i$
+
+- $\hat{Score}_i$ and $\hat{u}_i$ are uncorrelated by virtue of OLS.
+
+## Total, Explained and Residual Sum of Squares
+
+<div class="box">
+$$TSS = \sum_{i=1}^n \left(Score_i - \overline{Score}\right)^2$$ 
+$$ESS = \sum_{i=1}^n \left(\hat{Score}_i - \overline{Score}\right)^2$$
+$$RSS = \sum_{i=1}^n \left(Score_i - \hat{Score}_i\right)^2 = \sum_{i=1}^n \hat{u}^2_i$$
+
+$$TSS = ESS + RSS$$
+</div>
+
+## The standard error of the regression
+
+- The standard error of the regression ($SER$) is an estimator of the standard deviation of the error term $u$
+
+- The $SER$, often denoted $s_{\hat{u}}$, is constructed from the regression residuals $(\hat{u}_i;i=1,\ldots,n)$:
+
+  $$s_{\hat{u}} = \sqrt{\frac{1}{n-2}\sum_{i=1}^n \hat{u}_i^2} = \sqrt{\frac{RSS}{n-2}}$$
+
+## The standard error of the regression in R
+
+```{r, echo=TRUE, eval=TRUE, error=FALSE, warning=FALSE}
+summary(lm1) # Print summary of lm1-list to console
+```
+
+
+## The $R^2$
+
+- The $R^2$ is the ratio of ESS to TSS:
+
+  <div class="box">
+  $$R^2 = \frac{ESS}{TSS} = 1 - \frac{RSS}{TSS}$$
+  </div>
+
+- $R^2 \in [0,1]$; higher values indicate better in-sample fit
+
+- The $R^2$ is the share of variation in $Score_i$ that is "explained" by variation in $STR_i$.
+
+## The $R^2$ in R
+
+```{r, echo=TRUE, eval=TRUE, error=FALSE, warning=FALSE}
+summary(lm1) # Print summary of lm1-list to console
+```
+
+## Summary
+
+- $SER$ and $R^2$ measures how close the dependent variable is to (in-sample) predictions from the estimated model
+
+- The $R^2$ is the share of variation in the dependent variable that is "explained" by the regressor
+
+- The $SER$ is an estimator of the standard deviation of the error term $u$
+
+- The $SER$ and the $R^2$ are available in R after estimation via the `summary()`-function
+
+
